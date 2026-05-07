@@ -1,0 +1,57 @@
+{
+  "categories": [
+    {
+      "id": "turkey",
+      "name": "القهوة التركية",
+      "description": "المذاق العثماني الأصيل المحضر بعناية على الرمال الساخنة برغوة غنية.",
+      "image": "/WhatsApp Image 2026-05-07 at 2.42.12 PM (1).jpeg",
+      "subtitle": "Istanbul Heritage",
+      "icon": "Flame",
+      "products": [
+        {
+          "id": "turkey-1",
+          "name": "قهوة تركية سادة",
+          "price": 25,
+          "degree": "تحميص فاتح",
+          "imageUrl": "/WhatsApp Image 2026-05-07 at 2.42.12 PM (2).jpeg"
+        },
+        {
+          "id": "turkey-2",
+          "name": "قهوة تركية محوجة",
+          "price": 30,
+          "degree": "تحميص وسط مع هيل",
+          "imageUrl": "/WhatsApp Image 2026-05-07 at 2.42.12 PM (3).jpeg"
+        },
+        {
+          "id": "prod-1778186706300",
+          "name": "",
+          "price": 0,
+          "imageUrl": "",
+          "degree": ""
+        }
+      ]
+    }
+  ],
+  "photos": [
+    {
+      "id": 1,
+      "url": "/WhatsApp Image 2026-05-07 at 2.42.13 PM.jpeg",
+      "initialLikes": 124
+    },
+    {
+      "id": 2,
+      "url": "/WhatsApp Image 2026-05-07 at 2.42.13 PM (1).jpeg",
+      "initialLikes": 89
+    },
+    {
+      "id": 3,
+      "url": "/WhatsApp Image 2026-05-07 at 2.42.13 PM (2).jpeg",
+      "initialLikes": 256
+    },
+    {
+      "id": 4,
+      "url": "/WhatsApp Image 2026-05-07 at 2.42.13 PM (3).jpeg",
+      "initialLikes": 42
+    }
+  ]
+}
