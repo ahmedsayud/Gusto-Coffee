@@ -56,3 +56,23 @@ export async function deletePhoto(id: number) {
   await fs.writeFile(dbPath, JSON.stringify(data, null, 2));
   return { success: true };
 }
+
+export async function uploadImage(formData: FormData) {
+  try {
+    const file = formData.get("file") as File;
+    if (!file) throw new Error("No file uploaded");
+
+    const bytes = await file.arrayBuffer();
+    const buffer = Buffer.from(bytes);
+
+    // Create a unique filename
+    const filename = `${Date.now()}-${file.name.replace(/\s+/g, "-")}`;
+    const uploadPath = path.join(process.cwd(), "public", "uploads", filename);
+
+    await fs.writeFile(uploadPath, buffer);
+    return { success: true, url: `/uploads/${filename}` };
+  } catch (error) {
+    console.error("Upload error:", error);
+    return { success: false, error: "فشل رفع الصورة" };
+  }
+}

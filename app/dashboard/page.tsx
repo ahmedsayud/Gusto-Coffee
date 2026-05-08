@@ -5,7 +5,7 @@ import Navbar from "../components/Navbar";
 import { Order } from "@/types";
 import { CheckCircle2, Clock, Phone, MapPin, Package, RefreshCcw, Trash2, ExternalLink, Menu as MenuIcon, Image as ImageIcon, Plus, X, AlertCircle } from "lucide-react";
 import Link from "next/link";
-import { getDbData, saveCategory, deleteCategory, savePhoto, deletePhoto } from "../actions/db";
+import { getDbData, saveCategory, deleteCategory, savePhoto, deletePhoto, uploadImage } from "../actions/db";
 
 export default function DashboardPage() {
   const [activeTab, setActiveTab] = useState("orders");
@@ -15,6 +15,10 @@ export default function DashboardPage() {
   
   const [toast, setToast] = useState({ show: false, message: "", type: "success" });
   const [confirmModal, setConfirmModal] = useState<{ show: boolean; message: string; onConfirm: () => void }>({ show: false, message: "", onConfirm: () => {} });
+  
+  // Image Picker State
+  const [pickerModal, setPickerModal] = useState<{ show: boolean; onSelect: (url: string) => void }>({ show: false, onSelect: () => {} });
+  const [uploading, setUploading] = useState(false);
 
   const showToast = (message: string, type: "success" | "error" = "success") => {
     setToast({ show: true, message, type });
@@ -23,6 +27,30 @@ export default function DashboardPage() {
 
   const confirmAction = (message: string, action: () => void) => {
     setConfirmModal({ show: true, message, onConfirm: action });
+  };
+
+  const openPicker = (callback: (url: string) => void) => {
+    setPickerModal({ show: true, onSelect: callback });
+  };
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploading(true);
+    const formData = new FormData();
+    formData.append("file", file);
+
+    const result = await uploadImage(formData);
+    setUploading(false);
+
+    if (result.success && result.url) {
+      pickerModal.onSelect(result.url);
+      setPickerModal({ show: false, onSelect: () => {} });
+      showToast("تم رفع الصورة بنجاح");
+    } else {
+      showToast(result.error || "خطأ في الرفع", "error");
+    }
   };
 
   const fetchOrders = () => {
@@ -62,8 +90,8 @@ export default function DashboardPage() {
   };
 
   // Menu Management functions
-  const handleSaveCategory = async (e: React.FormEvent, category: any) => {
-    e.preventDefault();
+  const handleSaveCategory = async (e: React.FormEvent | null, category: any) => {
+    if (e) e.preventDefault();
     await saveCategory(category);
     loadDbData();
     showToast("تم حفظ التعديلات بنجاح!");
@@ -78,14 +106,10 @@ export default function DashboardPage() {
   };
 
   // Photo Management functions
-  const handleSavePhoto = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const form = e.target as HTMLFormElement;
-    const url = (form.elements.namedItem("url") as HTMLInputElement).value;
+  const handleAddPhoto = async (url: string) => {
     const newPhoto = { id: Date.now(), url, initialLikes: 0 };
     await savePhoto(newPhoto);
     loadDbData();
-    form.reset();
     showToast("تمت إضافة الصورة بنجاح");
   };
 
@@ -102,7 +126,7 @@ export default function DashboardPage() {
       <Navbar />
       
       {/* Toast Notification */}
-      <div className={`fixed top-24 left-1/2 -translate-x-1/2 z-50 transition-all duration-300 transform ${toast.show ? 'translate-y-0 opacity-100' : '-translate-y-10 opacity-0 pointer-events-none'}`}>
+      <div className={`fixed top-24 left-1/2 -translate-x-1/2 z-[100] transition-all duration-300 transform ${toast.show ? 'translate-y-0 opacity-100' : '-translate-y-10 opacity-0 pointer-events-none'}`}>
         <div className={`flex items-center gap-3 px-6 py-4 rounded-full shadow-2xl font-bold text-white ${toast.type === 'success' ? 'bg-stone-900' : 'bg-red-500'}`}>
           {toast.type === 'success' ? <CheckCircle2 size={20} /> : <AlertCircle size={20} />}
           {toast.message}
@@ -111,7 +135,7 @@ export default function DashboardPage() {
 
       {/* Confirm Modal */}
       {confirmModal.show && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm px-4">
+        <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/40 backdrop-blur-sm px-4">
           <div className="bg-white rounded-[32px] p-8 max-w-sm w-full shadow-2xl animate-fade-in">
             <div className="flex justify-center mb-6 text-red-500 bg-red-50 w-16 h-16 rounded-full items-center mx-auto">
               <AlertCircle size={32} />
@@ -134,6 +158,72 @@ export default function DashboardPage() {
               >
                 تراجع
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Image Picker Modal */}
+      {pickerModal.show && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-md px-4">
+          <div className="bg-white rounded-[40px] p-8 max-w-md w-full shadow-2xl animate-fade-in relative overflow-hidden">
+            <div className="absolute top-0 left-0 w-full h-2 bg-primary"></div>
+            <button onClick={() => setPickerModal({ show: false, onSelect: () => {} })} className="absolute top-6 left-6 text-stone-400 hover:text-stone-900 transition-colors">
+              <X size={24} />
+            </button>
+            
+            <div className="text-center mb-8">
+              <div className="h-16 w-16 bg-primary/10 rounded-3xl flex items-center justify-center text-primary mx-auto mb-4">
+                <ImageIcon size={32} />
+              </div>
+              <h3 className="text-2xl font-black text-stone-900 mb-2">إضافة صورة</h3>
+              <p className="text-stone-500 font-medium">اختر طريقة إضافة الصورة للقسم أو المنتج</p>
+            </div>
+
+            <div className="space-y-4">
+              {/* Upload Option */}
+              <label className={`flex flex-col items-center justify-center gap-3 p-8 rounded-3xl border-2 border-dashed transition-all cursor-pointer ${uploading ? 'bg-stone-50 border-stone-200 pointer-events-none' : 'bg-stone-50 border-stone-200 hover:border-primary hover:bg-primary/5 group'}`}>
+                {uploading ? (
+                  <RefreshCcw size={32} className="text-primary animate-spin" />
+                ) : (
+                  <>
+                    <Plus size={32} className="text-stone-300 group-hover:text-primary" />
+                    <span className="font-bold text-stone-500 group-hover:text-primary">رفع من الجهاز</span>
+                  </>
+                )}
+                <input type="file" className="hidden" accept="image/*" onChange={handleFileUpload} />
+              </label>
+
+              <div className="flex items-center gap-4 py-2">
+                <div className="flex-1 h-px bg-stone-100"></div>
+                <span className="text-[10px] font-black text-stone-300 uppercase tracking-[0.2em]">أو</span>
+                <div className="flex-1 h-px bg-stone-100"></div>
+              </div>
+
+              {/* URL Option */}
+              <div className="space-y-3">
+                <label className="text-[10px] font-black text-stone-400 uppercase tracking-widest block px-2">رابط صورة خارجي</label>
+                <div className="flex gap-2">
+                  <input 
+                    id="url-picker-input"
+                    className="flex-1 border border-stone-100 bg-stone-50/50 p-4 rounded-2xl font-bold focus:ring-2 focus:ring-primary/20 outline-none text-left" 
+                    dir="ltr" 
+                    placeholder="https://images.unsplash.com/..." 
+                  />
+                  <button 
+                    onClick={() => {
+                      const val = (document.getElementById('url-picker-input') as HTMLInputElement).value;
+                      if (val) {
+                        pickerModal.onSelect(val);
+                        setPickerModal({ show: false, onSelect: () => {} });
+                      }
+                    }}
+                    className="bg-stone-900 text-white px-6 rounded-2xl font-bold hover:bg-primary transition-all"
+                  >
+                    تم
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -207,7 +297,7 @@ export default function DashboardPage() {
                          </div>
                          <div className="flex gap-3">
                             <button onClick={() => toggleComplete(order.id)} className={`flex-1 font-bold px-4 py-4 rounded-2xl transition-all flex items-center justify-center gap-2 ${order.completed ? "bg-stone-100 text-stone-500 hover:bg-stone-200" : "bg-stone-900 text-white shadow-lg shadow-stone-900/10 hover:bg-primary"}`}>
-                              <CheckCircle2 size={18} /> {order.completed ? "إلغاء الإكمال" : "تأكيد التجهيز"}
+                               <CheckCircle2 size={18} /> {order.completed ? "إلغاء الإكمال" : "تأكيد التجهيز"}
                             </button>
                             <button onClick={() => deleteOrder(order.id)} className="h-14 w-14 flex items-center justify-center bg-white border border-stone-100 text-stone-300 rounded-2xl hover:bg-red-50 hover:text-red-500 hover:border-red-100 transition-all">
                               <Trash2 size={20} />
@@ -237,21 +327,26 @@ export default function DashboardPage() {
                         </button>
                       </div>
                       
-                      <form onSubmit={(e) => handleSaveCategory(e, cat)} className="grid gap-6">
+                      <div className="grid gap-6">
                         <div className="grid md:grid-cols-2 gap-6">
                           <div>
                             <label className="block text-[10px] font-black text-stone-400 uppercase tracking-widest mb-2">اسم القسم</label>
-                            <input className="w-full border border-stone-100 bg-stone-50/50 p-4 rounded-2xl font-bold focus:ring-2 focus:ring-primary/20 outline-none" defaultValue={cat.name} onChange={(e) => cat.name = e.target.value} placeholder="مثال: الإسبريسو" required />
+                            <input className="w-full border border-stone-100 bg-stone-50/50 p-4 rounded-2xl font-bold focus:ring-2 focus:ring-primary/20 outline-none" defaultValue={cat.name} onChange={(e) => { cat.name = e.target.value; handleSaveCategory(null, cat); }} placeholder="مثال: الإسبريسو" required />
                           </div>
                           <div>
-                            <label className="block text-[10px] font-black text-stone-400 uppercase tracking-widest mb-2">مسار صورة القسم</label>
-                            <input className="w-full border border-stone-100 bg-stone-50/50 p-4 rounded-2xl font-bold focus:ring-2 focus:ring-primary/20 outline-none text-left" dir="ltr" defaultValue={cat.image} onChange={(e) => cat.image = e.target.value} placeholder="/image.jpg" required />
+                            <label className="block text-[10px] font-black text-stone-400 uppercase tracking-widest mb-2">صورة القسم</label>
+                            <div className="flex gap-2">
+                              <input className="flex-1 border border-stone-100 bg-stone-50/50 p-4 rounded-2xl font-bold focus:ring-2 focus:ring-primary/20 outline-none text-left" dir="ltr" value={cat.image} onChange={(e) => { cat.image = e.target.value; handleSaveCategory(null, cat); }} placeholder="/image.jpg" />
+                              <button onClick={() => openPicker((url) => { cat.image = url; handleSaveCategory(null, cat); })} className="bg-stone-100 text-stone-600 p-4 rounded-2xl hover:bg-stone-200 transition-all flex items-center justify-center">
+                                <ImageIcon size={20} />
+                              </button>
+                            </div>
                           </div>
                         </div>
                         
                         <div>
                           <label className="block text-[10px] font-black text-stone-400 uppercase tracking-widest mb-2">الوصف</label>
-                          <textarea className="w-full border border-stone-100 bg-stone-50/50 p-4 rounded-2xl font-bold focus:ring-2 focus:ring-primary/20 outline-none" defaultValue={cat.description} onChange={(e) => cat.description = e.target.value} placeholder="اكتب وصفاً جذاباً للقسم" required rows={2} />
+                          <textarea className="w-full border border-stone-100 bg-stone-50/50 p-4 rounded-2xl font-bold focus:ring-2 focus:ring-primary/20 outline-none" defaultValue={cat.description} onChange={(e) => { cat.description = e.target.value; handleSaveCategory(null, cat); }} placeholder="اكتب وصفاً جذاباً للقسم" required rows={2} />
                         </div>
                         
                         <div className="mt-4 bg-stone-50 rounded-3xl p-6 border border-stone-100/50">
@@ -263,27 +358,28 @@ export default function DashboardPage() {
                           <div className="space-y-4">
                             {cat.products.map((p: any, idx: number) => (
                               <div key={p.id} className="flex flex-col md:flex-row gap-3 items-center bg-white p-4 rounded-2xl border border-stone-100 shadow-sm">
-                                <input className="w-full md:w-1/3 border border-stone-50 bg-stone-50/30 p-3 rounded-xl font-bold text-sm outline-none focus:border-primary/50" defaultValue={p.name} onChange={(e) => p.name = e.target.value} placeholder="اسم المنتج" required />
-                                <input className="w-full md:w-1/4 border border-stone-50 bg-stone-50/30 p-3 rounded-xl font-bold text-sm outline-none focus:border-primary/50 text-center" defaultValue={p.price} type="number" onChange={(e) => p.price = Number(e.target.value)} placeholder="السعر (ج.م)" required />
-                                <input className="w-full md:w-1/3 border border-stone-50 bg-stone-50/30 p-3 rounded-xl font-bold text-sm outline-none focus:border-primary/50 text-left" dir="ltr" defaultValue={p.imageUrl} onChange={(e) => p.imageUrl = e.target.value} placeholder="/prod.jpg" required />
-                                <button type="button" onClick={() => { cat.products.splice(idx, 1); handleSaveCategory(e as any, cat); }} className="w-full md:w-auto text-stone-400 hover:text-red-500 hover:bg-red-50 p-3 rounded-xl transition-all">
+                                <input className="w-full md:w-1/3 border border-stone-50 bg-stone-50/30 p-3 rounded-xl font-bold text-sm outline-none focus:border-primary/50" defaultValue={p.name} onChange={(e) => { p.name = e.target.value; handleSaveCategory(null, cat); }} placeholder="اسم المنتج" required />
+                                <input className="w-full md:w-1/6 border border-stone-50 bg-stone-50/30 p-3 rounded-xl font-bold text-sm outline-none focus:border-primary/50 text-center" defaultValue={p.price} type="number" onChange={(e) => { p.price = Number(e.target.value); handleSaveCategory(null, cat); }} placeholder="السعر" required />
+                                
+                                <div className="flex flex-1 gap-2 w-full md:w-auto">
+                                  <input className="flex-1 border border-stone-50 bg-stone-50/30 p-3 rounded-xl font-bold text-[10px] outline-none focus:border-primary/50 text-left" dir="ltr" value={p.imageUrl} onChange={(e) => { p.imageUrl = e.target.value; handleSaveCategory(null, cat); }} placeholder="/prod.jpg" />
+                                  <button onClick={() => openPicker((url) => { p.imageUrl = url; handleSaveCategory(null, cat); })} className="bg-stone-50 text-stone-400 p-3 rounded-xl hover:bg-stone-100 transition-all">
+                                    <ImageIcon size={18} />
+                                  </button>
+                                </div>
+
+                                <button type="button" onClick={() => { cat.products.splice(idx, 1); handleSaveCategory(null, cat); }} className="w-full md:w-auto text-stone-400 hover:text-red-500 hover:bg-red-50 p-3 rounded-xl transition-all">
                                   <Trash2 size={18} />
                                 </button>
                               </div>
                             ))}
                           </div>
                           
-                          <button type="button" onClick={(e) => { cat.products.push({id: `prod-${Date.now()}`, name: '', price: 0, imageUrl: '', degree: 'تحميص متوسط'}); handleSaveCategory(e as any, cat); }} className="mt-6 flex items-center gap-2 text-primary font-bold bg-primary/5 px-6 py-3 rounded-xl hover:bg-primary/10 transition-all w-fit">
+                          <button type="button" onClick={() => { cat.products.push({id: `prod-${Date.now()}`, name: '', price: 0, imageUrl: '', degree: 'تحميص متوسط'}); handleSaveCategory(null, cat); }} className="mt-6 flex items-center gap-2 text-primary font-bold bg-primary/5 px-6 py-3 rounded-xl hover:bg-primary/10 transition-all w-fit">
                             <Plus size={18} /> إضافة منتج جديد
                           </button>
                         </div>
-                        
-                        <div className="flex justify-end mt-4">
-                          <button type="submit" className="bg-stone-900 text-white px-10 py-4 rounded-full font-black hover:bg-primary shadow-lg shadow-stone-900/10 hover:shadow-primary/20 transition-all flex items-center gap-2">
-                            <CheckCircle2 size={20} /> حفظ تعديلات القسم
-                          </button>
-                        </div>
-                      </form>
+                      </div>
                     </div>
                   ))}
                   
@@ -303,28 +399,24 @@ export default function DashboardPage() {
               {/* PHOTOS TAB */}
               {activeTab === "photos" && (
                 <div className="max-w-6xl mx-auto">
-                  <div className="bg-white p-8 rounded-[40px] shadow-premium border border-stone-100 mb-10">
-                    <div className="flex items-center gap-4 mb-6">
-                      <div className="h-12 w-12 rounded-2xl bg-stone-50 flex items-center justify-center text-stone-400">
-                        <ImageIcon size={24} />
-                      </div>
-                      <div>
-                        <h2 className="text-2xl font-black text-stone-900">رفع صورة جديدة</h2>
-                        <p className="text-sm text-stone-500 font-medium">أضف مسار الصورة لتظهر في قسم "شاركنا لحظتك"</p>
-                      </div>
+                  <div className="bg-white p-12 rounded-[40px] shadow-premium border border-stone-100 mb-10 text-center">
+                    <div className="h-20 w-20 bg-primary/5 rounded-3xl flex items-center justify-center text-primary mx-auto mb-6">
+                      <ImageIcon size={40} />
                     </div>
+                    <h2 className="text-3xl font-black text-stone-900 mb-4">رفع صورة لصور العملاء</h2>
+                    <p className="text-stone-500 font-medium mb-8 max-w-md mx-auto">أضف صور العملاء المميزة لتظهر في المعرض التفاعلي بالصفحة الرئيسية.</p>
                     
-                    <form onSubmit={handleSavePhoto} className="flex flex-col md:flex-row gap-4">
-                      <input name="url" className="border border-stone-100 bg-stone-50/50 p-4 rounded-2xl font-bold focus:ring-2 focus:ring-primary/20 outline-none flex-1 text-left" dir="ltr" placeholder="مثال: /WhatsApp Image.jpeg" required />
-                      <button type="submit" className="bg-stone-900 text-white px-10 py-4 rounded-2xl font-black flex items-center justify-center gap-2 hover:bg-primary shadow-lg hover:shadow-primary/20 transition-all">
-                        <Plus size={20} /> أضف للمعرض
-                      </button>
-                    </form>
+                    <button 
+                      onClick={() => openPicker(handleAddPhoto)}
+                      className="bg-stone-900 text-white px-12 py-5 rounded-3xl font-black flex items-center justify-center gap-3 hover:bg-primary shadow-xl hover:shadow-primary/20 transition-all mx-auto"
+                    >
+                      <Plus size={24} /> إضافة صورة للمعرض
+                    </button>
                   </div>
                   
                   <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6">
                     {dbData.photos.map((photo: any) => (
-                      <div key={photo.id} className="relative group rounded-[24px] overflow-hidden aspect-square shadow-sm border border-stone-100 bg-stone-50">
+                      <div key={photo.id} className="relative group rounded-[32px] overflow-hidden aspect-square shadow-sm border border-stone-100 bg-stone-50">
                         <img src={photo.url} alt="Customer" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
                         <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                           <button onClick={() => handleDeletePhoto(photo.id)} className="bg-red-500 text-white p-4 rounded-full hover:scale-110 hover:bg-red-600 transition-all shadow-xl">

@@ -65,7 +65,7 @@ export default async function Home() {
             {categories.map((cat: any) => (
               <Link key={cat.id} href={`/category/${cat.id}`} className="group relative h-[450px] lg:h-[550px] overflow-hidden rounded-[40px] bg-stone-900 shadow-xl transition-all duration-700 hover:-translate-y-2 hover:shadow-2xl">
                 <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent z-10 transition-opacity duration-700 group-hover:opacity-90"></div>
-                <img src={cat.image} alt={cat.name} className="absolute inset-0 w-full h-full object-cover opacity-90 group-hover:scale-105 transition-all duration-[10s] ease-out" />
+                <img src={cat.image || "https://images.unsplash.com/photo-1497935586351-b67a49e012bf?q=80&w=1000&auto=format&fit=crop"} alt={cat.name} className="absolute inset-0 w-full h-full object-cover opacity-90 group-hover:scale-105 transition-all duration-[10s] ease-out" />
                 
                 <div className="absolute bottom-0 p-10 lg:p-14 z-20 w-full transform transition-transform duration-500 group-hover:-translate-y-2">
                   <div className="flex items-center gap-2 rounded-full bg-white/10 w-fit px-4 py-2 text-[10px] font-bold text-white backdrop-blur-md border border-white/20 mb-6 uppercase tracking-[0.2em]">
