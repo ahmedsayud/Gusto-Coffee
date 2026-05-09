@@ -10,8 +10,8 @@ const readexPro = Readex_Pro({
 });
 
 export const metadata: Metadata = {
-  title: "قهوتك المختصة | التجربة الأمثل",
-  description: "استمتع بأجود أنواع الإسبريسو والقهوة التركية في تجربة فريدة",
+  title: "بن الوالي | ELWalyCoffee — قهوتك المختصة",
+  description: "استمتع بأجود أنواع الإسبريسو والقهوة التركية من بن الوالي، حيث تلتقي الأصالة مع الجودة العالية.",
 };
 
 export default function RootLayout({

@@ -146,8 +146,11 @@ export default async function Home() {
                   <Coffee size={28} strokeWidth={2.5} />
                 </div>
                 <div className="flex flex-col">
-                   <span className="text-3xl font-bold tracking-tight leading-none">كاستو كوفي</span>
-                   <span className="text-[10px] text-primary uppercase tracking-[0.3em] font-bold mt-2">Premium Roasters</span>
+                   <div className="flex items-center gap-1.5 text-white">
+                     <span className="text-3xl font-black tracking-tighter">ELWaly</span>
+                     <span className="text-3xl font-light tracking-tighter text-primary">Coffee</span>
+                   </div>
+                   <span className="text-[10px] text-stone-500 uppercase tracking-[0.3em] font-bold mt-2">بن <span className="text-primary">الوالي</span> — الأصالة في كوب</span>
                 </div>
               </div>
               <p className="text-stone-400 font-medium max-w-md leading-relaxed text-lg">
@@ -181,7 +184,7 @@ export default async function Home() {
           </div>
           
           <div className="border-t border-white/5 pt-10 flex flex-col md:flex-row justify-between items-center gap-6">
-            <p className="text-stone-500 text-sm font-bold tracking-widest uppercase">© 2026 CUSTO COFFEE. All Rights Reserved.</p>
+            <p className="text-stone-500 text-sm font-bold tracking-widest uppercase">© 2026 ELWaly Coffee. All Rights Reserved.</p>
             <div className="flex gap-4">
               <Link href="#" className="h-12 w-12 flex items-center justify-center rounded-full bg-white/5 text-stone-400 hover:bg-primary hover:text-white transition-all hover:scale-110"><Camera size={20} /></Link>
               <Link href="#" className="h-12 w-12 flex items-center justify-center rounded-full bg-white/5 text-stone-400 hover:bg-primary hover:text-white transition-all hover:scale-110"><Globe size={20} /></Link>
