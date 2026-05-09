@@ -24,16 +24,16 @@ export default function Navbar() {
   return (
     <nav className="sticky top-0 z-50 w-full transition-smooth bg-white/95 backdrop-blur-md border-b border-stone-100 shadow-sm">
       <div className="mx-auto flex max-w-[1400px] items-center justify-between px-6 lg:px-12 py-4 lg:py-5">
-        <Link href="/" className="flex items-center gap-4 group">
-          <div className="relative flex h-14 w-14 items-center justify-center rounded-[20px] bg-primary text-white transition-all duration-300 group-hover:rotate-12 group-hover:scale-105 shadow-lg shadow-primary/20">
-            <Coffee size={28} strokeWidth={2.5} />
+        <Link href="/" className="flex items-center gap-3 md:gap-4 group">
+          <div className="relative flex h-10 w-10 md:h-14 md:w-14 items-center justify-center rounded-[14px] md:rounded-[20px] bg-primary text-white transition-all duration-300 group-hover:rotate-12 group-hover:scale-105 shadow-lg shadow-primary/20">
+            <Coffee size={20} className="md:w-7 md:h-7" strokeWidth={2.5} />
           </div>
           <div className="flex flex-col">
-            <div className="flex items-center gap-1.5">
-              <span className="text-2xl font-black tracking-tighter text-stone-900 leading-none">ELWaly</span>
-              <span className="text-2xl font-light tracking-tighter text-primary leading-none">Coffee</span>
+            <div className="flex items-center gap-1 md:gap-1.5">
+              <span className="text-lg md:text-2xl font-black tracking-tighter text-stone-900 leading-none">ELWaly</span>
+              <span className="text-lg md:text-2xl font-light tracking-tighter text-primary leading-none">Coffee</span>
             </div>
-            <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-stone-400 mt-1.5">
+            <span className="hidden xs:block text-[8px] md:text-[10px] font-bold uppercase tracking-[0.1em] md:tracking-[0.2em] text-stone-400 mt-1 md:mt-1.5">
               بن <span className="text-primary">الوالي</span> — الأصالة في كوب
             </span>
           </div>

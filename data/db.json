@@ -21,29 +21,8 @@
           "price": 30,
           "degree": "تحميص وسط مع هيل",
           "imageUrl": "/WhatsApp Image 2026-05-07 at 2.42.12 PM (3).jpeg"
-        },
-        {
-          "id": "prod-1778240972140",
-          "name": "لالالالا",
-          "price": 0,
-          "imageUrl": "",
-          "degree": "تحميص متوسط"
-        },
-        {
-          "id": "prod-1778241086338",
-          "name": "",
-          "price": 0,
-          "imageUrl": "",
-          "degree": "تحميص متوسط"
         }
       ]
-    },
-    {
-      "id": "cat-1778241167647",
-      "name": "قسم جديد",
-      "description": "وصف القسم",
-      "image": "",
-      "products": []
     }
   ],
   "photos": [
