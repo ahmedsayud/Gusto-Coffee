@@ -37,19 +37,31 @@ export default function DashboardPage() {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    // Check size (e.g., 5MB limit)
+    if (file.size > 5 * 1024 * 1024) {
+      showToast("حجم الصورة كبير جداً. الحد الأقصى 5 ميجابايت", "error");
+      return;
+    }
+
     setUploading(true);
-    const formData = new FormData();
-    formData.append("file", file);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
 
-    const result = await uploadImage(formData);
-    setUploading(false);
+      const result = await uploadImage(formData);
+      setUploading(false);
 
-    if (result.success && result.url) {
-      pickerModal.onSelect(result.url);
-      setPickerModal({ show: false, onSelect: () => {} });
-      showToast("تم رفع الصورة بنجاح");
-    } else {
-      showToast(result.error || "خطأ في الرفع", "error");
+      if (result.success && result.url) {
+        pickerModal.onSelect(result.url);
+        setPickerModal({ show: false, onSelect: () => {} });
+        showToast("تم رفع الصورة بنجاح");
+      } else {
+        showToast(result.error || "خطأ في الرفع", "error");
+      }
+    } catch (err) {
+      setUploading(false);
+      console.error("Upload error:", err);
+      showToast("حدث خطأ في الاتصال بالسيرفر. حاول مرة أخرى", "error");
     }
   };
 
